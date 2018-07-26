@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>DicomExplorer.qml</file>
-    </qresource>
-</RCC>
