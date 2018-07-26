@@ -42,7 +42,7 @@ Work in progress...
 ## Python project:
 pydicom is used along with Qt to develop small applications to augument the community contributed applications. 
 
-Under python subfolder, add necessary python scripts or projects that can be reused in any python application. These projects/scripts might be a single standalong python script or a full application that leverages Qt framework, pydicom and other Python packages.
+Under python subfolder, add necessary python scripts or projects that can be reused in any python application. These projects/scripts might be a single standalone python script or a full application that leverages Qt framework, pydicom and other Python packages.
 
 README.md
 
