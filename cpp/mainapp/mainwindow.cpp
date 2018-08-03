@@ -1,0 +1,320 @@
+// Project includes
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+
+// Library includes
+#include <memory>
+
+// Qt includes
+#include <QMessageBox>
+#include <QStringList>
+
+// DCMTK includes
+#include "dcmtk/config/osconfig.h"
+#include "dcmtk/dcmdata/dcdatset.h"
+#include "dcmtk/dcmdata/dcdeftag.h"
+#include "dcmtk/dcmdata/dcfilefo.h"
+
+#define PLUGINS_SUBFOLDER                   "/dlplugins/"
+#define LANGUAGES_SUBFOLDER                 "/languages/"
+#define THEMES_SUBFOLDER                    "/themes/"
+#define FILE_ON_DISK_DYNAMIC_PROPERTY       "absolute_file_path"
+
+MainWindow::MainWindow(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::MainWindow)
+{
+    ui->setupUi(this);
+
+    loadSettings();
+
+    populatePluginsMenu();
+    populateLanguagesMenu();
+    populateThemesMenu();
+}
+
+MainWindow::~MainWindow()
+{
+    delete currentPlugin;
+    delete ui;
+}
+
+void MainWindow::loadSettings()
+{
+    QSettings settings("DicomLab", "Dicom_Lab", this);
+    currentThemeFile = settings.value("currentThemeFile", "").toString();
+    currentLanguageFile = settings.value("currentLanguageFile", "").toString();
+    currentPluginFile = settings.value("currentPluginFile", "").toString();
+}
+
+void MainWindow::saveSettings()
+{
+    QSettings settings("DicomLab", "Dicom_Lab", this);
+    settings.setValue("currentThemeFile", currentThemeFile);
+    settings.setValue("currentLanguageFile", currentLanguageFile);
+    settings.setValue("currentPluginFile", currentPluginFile);
+}
+
+void MainWindow::changeEvent(QEvent *event)
+{
+    if(event->type() == QEvent::LanguageChange)
+    {
+        ui->retranslateUi(this);
+    }
+    else
+    {
+        QMainWindow::changeEvent(event);
+    }
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    int result = QMessageBox::warning(this, tr("Exit"), tr("Are you sure you want to exit?"), QMessageBox::Yes, QMessageBox::No);
+    if(result == QMessageBox::Yes)
+    {
+        saveSettings();
+        event->accept();
+    }
+    else
+    {
+        event->ignore();
+    }
+}
+
+void MainWindow::populatePluginsMenu()
+{
+    // Load all plugins and populate the menus
+    QDir pluginsDir(qApp->applicationDirPath() + PLUGINS_SUBFOLDER);
+    QFileInfoList pluginFiles = pluginsDir.entryInfoList(QDir::NoDotAndDotDot | QDir::Files, QDir::Name);
+    foreach(QFileInfo pluginFile, pluginFiles)
+    {
+        if(QLibrary::isLibrary(pluginFile.absoluteFilePath()))
+        {
+            QPluginLoader pluginLoader(pluginFile.absoluteFilePath(), this);
+            if(DlPluginInterface *plugin = dynamic_cast<DlPluginInterface*>(pluginLoader.instance()))
+            {
+                QAction *pluginAction = ui->menu_Plugins->addAction(plugin->title());
+                pluginAction->setProperty(FILE_ON_DISK_DYNAMIC_PROPERTY, pluginFile.absoluteFilePath());
+                connect(pluginAction, SIGNAL(triggered(bool)), this, SLOT(onPluginActionTriggered(bool)));
+                if(currentPluginFile == pluginFile.absoluteFilePath())
+                {
+                    pluginAction->trigger();
+                }
+            }
+            else
+            {
+                QMessageBox::warning(this, tr("Warning"),
+                                     QString(tr("Make sure %1 is a correct plugin for this application<br>"
+                                                "and it's not in use by some other application!")).arg(pluginFile.fileName()));
+            }
+        }
+        else
+        {
+            QMessageBox::warning(this, tr("Warning"),
+                                 QString(tr("Make sure only plugins exist in %1 folder.<br>"
+                                            "%2 is not a plugin."))
+                                 .arg(PLUGINS_SUBFOLDER)
+                                 .arg(pluginFile.fileName()));
+        }
+    }
+
+    if(ui->menu_Plugins->actions().count() <= 0)
+    {
+        QMessageBox::critical(this, tr("No Plugins"), QString(tr("This application cannot work without plugins!"
+                                                                 "<br>Make sure that %1 folder exists "
+                                                                 "in the same folder as the application<br>and that "
+                                                                 "there are some filter plugins inside it")).arg(PLUGINS_SUBFOLDER));
+        this->setEnabled(false);
+    }
+}
+
+void MainWindow::populateLanguagesMenu()
+{
+    QMenu *languagesMenu = new QMenu(this);
+    // Add default (english) language
+    QAction *defaultLanguageAction = languagesMenu->addAction("English - US");
+    defaultLanguageAction->setProperty(FILE_ON_DISK_DYNAMIC_PROPERTY, "");
+    connect(defaultLanguageAction, SIGNAL(triggered(bool)), this, SLOT(onLanguageActionTriggered(bool)));
+
+    // Load all languages and populate the menus
+    QDir languagesDir(qApp->applicationDirPath() + LANGUAGES_SUBFOLDER);
+    QFileInfoList languageFiles = languagesDir.entryInfoList(QStringList() << "*.qm", QDir::NoDotAndDotDot | QDir::Files, QDir::Name);
+    foreach(QFileInfo languageFile, languageFiles)
+    {
+        QAction *languageAction = languagesMenu->addAction(languageFile.baseName());
+        languageAction->setProperty(FILE_ON_DISK_DYNAMIC_PROPERTY, languageFile.absoluteFilePath());
+        connect(languageAction, SIGNAL(triggered(bool)), this, SLOT(onLanguageActionTriggered(bool)));
+
+        if(currentLanguageFile == languageFile.absoluteFilePath())
+        {
+            languageAction->trigger();
+        }
+    }
+    ui->actionLanguage->setMenu(languagesMenu);
+}
+
+void MainWindow::populateThemesMenu()
+{
+    QMenu *themesMenu = new QMenu(this);
+    // Add default (native) theme
+    QAction *defaultThemeAction = themesMenu->addAction("Default");
+    defaultThemeAction->setProperty(FILE_ON_DISK_DYNAMIC_PROPERTY, "");
+    connect(defaultThemeAction, SIGNAL(triggered(bool)), this, SLOT(onThemeActionTriggered(bool)));
+
+    // Load all themes and populate the menus
+    QDir themesDir(qApp->applicationDirPath() + THEMES_SUBFOLDER);
+    QFileInfoList themeFiles = themesDir.entryInfoList(QStringList() << "*.thm", QDir::NoDotAndDotDot | QDir::Files, QDir::Name);
+    foreach(QFileInfo themeFile, themeFiles)
+    {
+        QAction *themeAction = themesMenu->addAction(themeFile.baseName());
+        themeAction->setProperty(FILE_ON_DISK_DYNAMIC_PROPERTY, themeFile.absoluteFilePath());
+        connect(themeAction, SIGNAL(triggered(bool)), this, SLOT(onThemeActionTriggered(bool)));
+
+        if(currentThemeFile == themeFile.absoluteFilePath())
+        {
+            themeAction->trigger();
+        }
+    }
+    ui->actionTheme->setMenu(themesMenu);
+}
+
+void MainWindow::testDcmtk()
+{
+    // get the test data to load
+    QString test_data_file_path = "c:\\temp\\testct.dcm";
+
+    qDebug() << "\nTest data file path: \n" << test_data_file_path << "\n";
+
+    DcmFileFormat file_format;
+    OFCondition status = file_format.loadFile(test_data_file_path.toStdString().c_str());
+
+    if (!status.good()) {
+        return;
+    }
+
+    std::shared_ptr<DcmDataset> dataset(file_format.getDataset());
+
+    qDebug() << "\nInformation extracted from DICOM file: \n";
+    const char* buffer = nullptr;
+    DcmTagKey key = DCM_PatientName;
+    dataset->findAndGetString(key,buffer);
+    std::string tag_value = buffer;
+    qDebug() << "Patient name: " << tag_value.c_str();
+
+    key = DCM_PatientID;
+    dataset->findAndGetString(key,buffer);
+    tag_value = buffer;
+    qDebug() << "Patient id: " << tag_value.c_str();
+
+    key = DCM_TransferSyntaxUID;
+    dataset->findAndGetString(key,buffer);
+    if(buffer == NULL) {
+        qDebug() << "Transfer syntax value is NULL";;
+    }
+    else {
+        tag_value = buffer;
+        qDebug() << "Transfer syntax: " << tag_value.c_str();
+    }
+
+    E_TransferSyntax transfer_syntax = dataset->getCurrentXfer();
+    DcmXfer dcm_ts(transfer_syntax);
+    std::string ts_name = dcm_ts.getXferName();
+    qDebug() << "Transfer syntax name: " << ts_name.c_str();
+
+    QMessageBox mbox;
+    mbox.setText("End of dcmtk test.");
+    mbox.exec();
+}
+
+void MainWindow::on_actionAboutQt_triggered()
+{
+    qApp->aboutQt();
+}
+
+void MainWindow::on_actionExit_triggered()
+{
+    close();
+}
+
+void MainWindow::onPluginActionTriggered(bool)
+{
+    if(!currentPlugin.isNull())
+    {
+        delete currentPlugin;
+        delete currentPluginGui;
+    }
+
+    currentPluginFile = QObject::sender()->property(FILE_ON_DISK_DYNAMIC_PROPERTY).toString();
+    currentPlugin = new QPluginLoader(currentPluginFile, this);
+    currentPluginGui = new QWidget(this);
+    ui->pluginLayout->addWidget(currentPluginGui);
+    DlPluginInterface *currentPluginInstance = dynamic_cast<DlPluginInterface*>(currentPlugin->instance());
+
+    if(currentPluginInstance)
+    {
+        currentPluginInstance->setupUi(currentPluginGui);
+        connect(currentPlugin->instance(), SIGNAL(updateNeeded()), this, SLOT(onCurrentPluginUpdateNeeded()));
+        connect(currentPlugin->instance(), SIGNAL(infoMessage(QString)), this, SLOT(onCurrentPluginInfoMessage(QString)));
+        connect(currentPlugin->instance(), SIGNAL(errorMessage(QString)), this, SLOT(onCurrentPluginErrorMessage(QString)));
+
+    }
+}
+
+void MainWindow::onLanguageActionTriggered(bool)
+{
+    currentLanguageFile = QObject::sender()->property(FILE_ON_DISK_DYNAMIC_PROPERTY).toString();
+    qApp->removeTranslator(&translator);
+    if(!currentLanguageFile.isEmpty())
+    {
+        translator.load(currentLanguageFile);
+        qApp->installTranslator(&translator);
+        ui->retranslateUi(this);
+    }
+}
+
+void MainWindow::onThemeActionTriggered(bool)
+{
+    currentThemeFile = QObject::sender()->property(FILE_ON_DISK_DYNAMIC_PROPERTY).toString();
+    QFile themeFile(currentThemeFile);
+    if(currentThemeFile.isEmpty())
+    {
+        qApp->setStyleSheet("");
+    }
+    else
+    {
+        themeFile.open(QFile::ReadOnly | QFile::Text);
+        QString styleSheet = themeFile.readAll();
+        qApp->setStyleSheet(styleSheet);
+        themeFile.close();
+    }
+}
+
+void MainWindow::on_actionOpenImage_triggered()
+{
+    testDcmtk();
+}
+
+void MainWindow::onCurrentPluginUpdateNeeded()
+{
+    // TODO
+}
+
+void MainWindow::on_actionSaveImage_triggered()
+{
+    // TODO
+}
+
+void MainWindow::onCurrentPluginErrorMessage(QString msg)
+{
+    qDebug() << "Plugin Error Message : " << msg;
+}
+
+void MainWindow::onCurrentPluginInfoMessage(QString msg)
+{
+    qDebug() << "Plugin Info Message : " << msg;
+}
+
+void MainWindow::on_action_Camera_triggered()
+{
+
+}
