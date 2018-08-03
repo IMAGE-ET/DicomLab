@@ -1,3 +1,5 @@
+include(../dcmtk.pri)
+
 QT       += core gui
 
 CONFIG   += c++14
@@ -28,21 +30,6 @@ HEADERS += \
         mainwindow.h 
 FORMS += \
         mainwindow.ui
-
-win32: {
-    include("c:/dev/dcmtk/dcmtk.pri")
-}
-
-unix: !macx{
-    CONFIG += link_pkgconfig
-    PKGCONFIG += dcmtk
-}
-
-unix: macx{
-INCLUDEPATH += /usr/local/include
-LIBS += -L"/usr/local/lib" \
-    -ldcmtk
-}
 
 # Add more language entries here, following the same naming rule
 TRANSLATIONS = language_tr.ts

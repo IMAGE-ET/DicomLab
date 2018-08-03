@@ -1,3 +1,5 @@
+include(../dcmtk.pri)
+
 QT       += widgets
 CONFIG   += c++14
 TARGET = Template_Plugin
@@ -30,21 +32,6 @@ HEADERS += \
 unix {
     target.path = /usr/lib
     INSTALLS += target
-}
-
-win32: {
-    include("c:/dev/dcmtk/dcmtk.pri")
-}
-
-unix: !macx{
-    CONFIG += link_pkgconfig
-    PKGCONFIG += dcmtk
-}
-
-unix: macx{
-INCLUDEPATH += "/usr/local/include"
-LIBS += -L"/usr/local/lib" \
-    -ldcmtk
 }
 
 FORMS += \
