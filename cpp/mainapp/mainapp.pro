@@ -36,4 +36,5 @@ TRANSLATIONS = language_tr.ts
 
 DISTFILES += \
     context_diagram.qmodel \
-    component_diagram.qmodel
+    component_diagram.qmodel \
+    deployment_diagram.qmodel
