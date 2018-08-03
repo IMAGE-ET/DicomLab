@@ -22,9 +22,9 @@
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow)
+    m_ui(new Ui::MainWindow)
 {
-    ui->setupUi(this);
+    m_ui->setupUi(this);
 
     loadSettings();
 
@@ -35,31 +35,31 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    delete currentPlugin;
-    delete ui;
+    delete m_currentPlugin;
+    delete m_ui;
 }
 
 void MainWindow::loadSettings()
 {
     QSettings settings("DicomLab", "Dicom_Lab", this);
-    currentThemeFile = settings.value("currentThemeFile", "").toString();
-    currentLanguageFile = settings.value("currentLanguageFile", "").toString();
-    currentPluginFile = settings.value("currentPluginFile", "").toString();
+    m_currentThemeFile = settings.value("currentThemeFile", "").toString();
+    m_currentLanguageFile = settings.value("currentLanguageFile", "").toString();
+    m_currentPluginFile = settings.value("currentPluginFile", "").toString();
 }
 
 void MainWindow::saveSettings()
 {
     QSettings settings("DicomLab", "Dicom_Lab", this);
-    settings.setValue("currentThemeFile", currentThemeFile);
-    settings.setValue("currentLanguageFile", currentLanguageFile);
-    settings.setValue("currentPluginFile", currentPluginFile);
+    settings.setValue("currentThemeFile", m_currentThemeFile);
+    settings.setValue("currentLanguageFile", m_currentLanguageFile);
+    settings.setValue("currentPluginFile", m_currentPluginFile);
 }
 
 void MainWindow::changeEvent(QEvent *event)
 {
     if(event->type() == QEvent::LanguageChange)
     {
-        ui->retranslateUi(this);
+        m_ui->retranslateUi(this);
     }
     else
     {
@@ -93,10 +93,10 @@ void MainWindow::populatePluginsMenu()
             QPluginLoader pluginLoader(pluginFile.absoluteFilePath(), this);
             if(DlPluginInterface *plugin = dynamic_cast<DlPluginInterface*>(pluginLoader.instance()))
             {
-                QAction *pluginAction = ui->menu_Plugins->addAction(plugin->title());
+                QAction *pluginAction = m_ui->menu_Plugins->addAction(plugin->title());
                 pluginAction->setProperty(FILE_ON_DISK_DYNAMIC_PROPERTY, pluginFile.absoluteFilePath());
                 connect(pluginAction, SIGNAL(triggered(bool)), this, SLOT(onPluginActionTriggered(bool)));
-                if(currentPluginFile == pluginFile.absoluteFilePath())
+                if(m_currentPluginFile == pluginFile.absoluteFilePath())
                 {
                     pluginAction->trigger();
                 }
@@ -118,7 +118,7 @@ void MainWindow::populatePluginsMenu()
         }
     }
 
-    if(ui->menu_Plugins->actions().count() <= 0)
+    if(m_ui->menu_Plugins->actions().count() <= 0)
     {
         QMessageBox::critical(this, tr("No Plugins"), QString(tr("This application cannot work without plugins!"
                                                                  "<br>Make sure that %1 folder exists "
@@ -145,12 +145,12 @@ void MainWindow::populateLanguagesMenu()
         languageAction->setProperty(FILE_ON_DISK_DYNAMIC_PROPERTY, languageFile.absoluteFilePath());
         connect(languageAction, SIGNAL(triggered(bool)), this, SLOT(onLanguageActionTriggered(bool)));
 
-        if(currentLanguageFile == languageFile.absoluteFilePath())
+        if(m_currentLanguageFile == languageFile.absoluteFilePath())
         {
             languageAction->trigger();
         }
     }
-    ui->actionLanguage->setMenu(languagesMenu);
+    m_ui->actionLanguage->setMenu(languagesMenu);
 }
 
 void MainWindow::populateThemesMenu()
@@ -170,60 +170,42 @@ void MainWindow::populateThemesMenu()
         themeAction->setProperty(FILE_ON_DISK_DYNAMIC_PROPERTY, themeFile.absoluteFilePath());
         connect(themeAction, SIGNAL(triggered(bool)), this, SLOT(onThemeActionTriggered(bool)));
 
-        if(currentThemeFile == themeFile.absoluteFilePath())
+        if(m_currentThemeFile == themeFile.absoluteFilePath())
         {
             themeAction->trigger();
         }
     }
-    ui->actionTheme->setMenu(themesMenu);
+    m_ui->actionTheme->setMenu(themesMenu);
 }
 
 void MainWindow::testDcmtk()
 {
     // get the test data to load
-    QString test_data_file_path = "c:\\temp\\testct.dcm";
+    QString filePath = "c:\\temp\\testct.dcm";
 
-    qDebug() << "\nTest data file path: \n" << test_data_file_path << "\n";
+    qDebug() << "\nTest data file path: \n" << filePath << "\n";
 
-    DcmFileFormat file_format;
-    OFCondition status = file_format.loadFile(test_data_file_path.toStdString().c_str());
+    DcmFileFormat fileFormat;
+    OFCondition status = fileFormat.loadFile(filePath.toStdString().c_str());
 
     if (!status.good()) {
+        qDebug() << "Error in loading a DICOM file.";
         return;
     }
 
-    std::shared_ptr<DcmDataset> dataset(file_format.getDataset());
-
-    qDebug() << "\nInformation extracted from DICOM file: \n";
-    const char* buffer = nullptr;
-    DcmTagKey key = DCM_PatientName;
-    dataset->findAndGetString(key,buffer);
-    std::string tag_value = buffer;
-    qDebug() << "Patient name: " << tag_value.c_str();
-
-    key = DCM_PatientID;
-    dataset->findAndGetString(key,buffer);
-    tag_value = buffer;
-    qDebug() << "Patient id: " << tag_value.c_str();
-
-    key = DCM_TransferSyntaxUID;
-    dataset->findAndGetString(key,buffer);
-    if(buffer == NULL) {
-        qDebug() << "Transfer syntax value is NULL";;
+    OFString patientName;
+    if (fileFormat.getDataset()->findAndGetOFString(DCM_PatientName,patientName).good()) {
+        qDebug() << "Patient's Name: " << patientName.c_str();
     }
     else {
-        tag_value = buffer;
-        qDebug() << "Transfer syntax: " << tag_value.c_str();
+        qDebug() << "Cannot access Patient's Name.";
     }
 
-    E_TransferSyntax transfer_syntax = dataset->getCurrentXfer();
-    DcmXfer dcm_ts(transfer_syntax);
-    std::string ts_name = dcm_ts.getXferName();
-    qDebug() << "Transfer syntax name: " << ts_name.c_str();
+    QMessageBox msgBox;
+    msgBox.setText("End of dcmtk test.");
+    msgBox.exec();
 
-    QMessageBox mbox;
-    mbox.setText("End of dcmtk test.");
-    mbox.exec();
+    return;
 }
 
 void MainWindow::on_actionAboutQt_triggered()
@@ -238,45 +220,45 @@ void MainWindow::on_actionExit_triggered()
 
 void MainWindow::onPluginActionTriggered(bool)
 {
-    if(!currentPlugin.isNull())
+    if(!m_currentPlugin.isNull())
     {
-        delete currentPlugin;
-        delete currentPluginGui;
+        delete m_currentPlugin;
+        delete m_currentPluginGui;
     }
 
-    currentPluginFile = QObject::sender()->property(FILE_ON_DISK_DYNAMIC_PROPERTY).toString();
-    currentPlugin = new QPluginLoader(currentPluginFile, this);
-    currentPluginGui = new QWidget(this);
-    ui->pluginLayout->addWidget(currentPluginGui);
-    DlPluginInterface *currentPluginInstance = dynamic_cast<DlPluginInterface*>(currentPlugin->instance());
+    m_currentPluginFile = QObject::sender()->property(FILE_ON_DISK_DYNAMIC_PROPERTY).toString();
+    m_currentPlugin = new QPluginLoader(m_currentPluginFile, this);
+    m_currentPluginGui = new QWidget(this);
+    m_ui->pluginLayout->addWidget(m_currentPluginGui);
+    DlPluginInterface *currentPluginInstance = dynamic_cast<DlPluginInterface*>(m_currentPlugin->instance());
 
     if(currentPluginInstance)
     {
-        currentPluginInstance->setupUi(currentPluginGui);
-        connect(currentPlugin->instance(), SIGNAL(updateNeeded()), this, SLOT(onCurrentPluginUpdateNeeded()));
-        connect(currentPlugin->instance(), SIGNAL(infoMessage(QString)), this, SLOT(onCurrentPluginInfoMessage(QString)));
-        connect(currentPlugin->instance(), SIGNAL(errorMessage(QString)), this, SLOT(onCurrentPluginErrorMessage(QString)));
+        currentPluginInstance->setupUi(m_currentPluginGui);
+        connect(m_currentPlugin->instance(), SIGNAL(updateNeeded()), this, SLOT(onCurrentPluginUpdateNeeded()));
+        connect(m_currentPlugin->instance(), SIGNAL(infoMessage(QString)), this, SLOT(onCurrentPluginInfoMessage(QString)));
+        connect(m_currentPlugin->instance(), SIGNAL(errorMessage(QString)), this, SLOT(onCurrentPluginErrorMessage(QString)));
 
     }
 }
 
 void MainWindow::onLanguageActionTriggered(bool)
 {
-    currentLanguageFile = QObject::sender()->property(FILE_ON_DISK_DYNAMIC_PROPERTY).toString();
-    qApp->removeTranslator(&translator);
-    if(!currentLanguageFile.isEmpty())
+    m_currentLanguageFile = QObject::sender()->property(FILE_ON_DISK_DYNAMIC_PROPERTY).toString();
+    qApp->removeTranslator(&m_translator);
+    if(!m_currentLanguageFile.isEmpty())
     {
-        translator.load(currentLanguageFile);
-        qApp->installTranslator(&translator);
-        ui->retranslateUi(this);
+        m_translator.load(m_currentLanguageFile);
+        qApp->installTranslator(&m_translator);
+        m_ui->retranslateUi(this);
     }
 }
 
 void MainWindow::onThemeActionTriggered(bool)
 {
-    currentThemeFile = QObject::sender()->property(FILE_ON_DISK_DYNAMIC_PROPERTY).toString();
-    QFile themeFile(currentThemeFile);
-    if(currentThemeFile.isEmpty())
+    m_currentThemeFile = QObject::sender()->property(FILE_ON_DISK_DYNAMIC_PROPERTY).toString();
+    QFile themeFile(m_currentThemeFile);
+    if(m_currentThemeFile.isEmpty())
     {
         qApp->setStyleSheet("");
     }

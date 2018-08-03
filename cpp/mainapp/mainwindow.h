@@ -47,37 +47,28 @@ private slots:
     void onCurrentPluginUpdateNeeded();
     void onCurrentPluginErrorMessage(QString msg);
     void onCurrentPluginInfoMessage(QString msg);
-
     void on_actionAboutQt_triggered();
-
     void on_actionExit_triggered();
-
     void on_actionOpenImage_triggered();
-
     void on_actionSaveImage_triggered();
-
     void on_action_Camera_triggered();
 
 private:
-    Ui::MainWindow *ui;
-
     void loadSettings();
     void saveSettings();
-
-    QString currentThemeFile;
-    QString currentLanguageFile;
-    QString currentPluginFile;
-
     void populatePluginsMenu();
     void populateLanguagesMenu();
     void populateThemesMenu();
-
     void testDcmtk();
 
-    QPointer<QPluginLoader> currentPlugin;
-    QPointer<QWidget> currentPluginGui;
-    QGraphicsScene scene;
-    QTranslator translator;
+private:
+    Ui::MainWindow *m_ui;
+    QString m_currentThemeFile;
+    QString m_currentLanguageFile;
+    QString m_currentPluginFile;
+    QPointer<QPluginLoader> m_currentPlugin;
+    QPointer<QWidget> m_currentPluginGui;
+    QTranslator m_translator;
 };
 
 #endif // MAINWINDOW_H

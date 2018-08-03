@@ -34,8 +34,8 @@ QString Template_Plugin::help()
 
 void Template_Plugin::setupUi(QWidget *parent)
 {
-    ui = new Ui::PluginGui;
-    ui->setupUi(parent);
+    m_ui = new Ui::PluginGui;
+    m_ui->setupUi(parent);
 
     // Connect signals for GUI elemnts manually here since they won't be connected by name in a plugin
     // ...

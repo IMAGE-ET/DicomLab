@@ -29,7 +29,7 @@ signals:
     void infoMessage(QString msg);
 
 private:
-    Ui::PluginGui *ui;
+    Ui::PluginGui *m_ui;
 };
 
 #endif // TEMPLATE_PLUGIN_H
