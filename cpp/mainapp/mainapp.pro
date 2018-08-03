@@ -33,3 +33,7 @@ FORMS += \
 
 # Add more language entries here, following the same naming rule
 TRANSLATIONS = language_tr.ts
+
+DISTFILES += \
+    context_diagram.qmodel \
+    component_diagram.qmodel
