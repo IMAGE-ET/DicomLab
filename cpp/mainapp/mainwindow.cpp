@@ -9,12 +9,6 @@
 #include <QMessageBox>
 #include <QStringList>
 
-// DCMTK includes
-#include "dcmtk/config/osconfig.h"
-#include "dcmtk/dcmdata/dcdatset.h"
-#include "dcmtk/dcmdata/dcdeftag.h"
-#include "dcmtk/dcmdata/dcfilefo.h"
-
 #define PLUGINS_SUBFOLDER                   "/dlplugins/"
 #define LANGUAGES_SUBFOLDER                 "/languages/"
 #define THEMES_SUBFOLDER                    "/themes/"
@@ -178,36 +172,6 @@ void MainWindow::populateThemesMenu()
     m_ui->actionTheme->setMenu(themesMenu);
 }
 
-void MainWindow::testDcmtk()
-{
-    // get the test data to load
-    QString filePath = "c:\\temp\\testct.dcm";
-
-    qDebug() << "\nTest data file path: \n" << filePath << "\n";
-
-    DcmFileFormat fileFormat;
-    OFCondition status = fileFormat.loadFile(filePath.toStdString().c_str());
-
-    if (!status.good()) {
-        qDebug() << "Error in loading a DICOM file.";
-        return;
-    }
-
-    OFString patientName;
-    if (fileFormat.getDataset()->findAndGetOFString(DCM_PatientName,patientName).good()) {
-        qDebug() << "Patient's Name: " << patientName.c_str();
-    }
-    else {
-        qDebug() << "Cannot access Patient's Name.";
-    }
-
-    QMessageBox msgBox;
-    msgBox.setText("End of dcmtk test.");
-    msgBox.exec();
-
-    return;
-}
-
 void MainWindow::on_actionAboutQt_triggered()
 {
     qApp->aboutQt();
@@ -273,7 +237,6 @@ void MainWindow::onThemeActionTriggered(bool)
 
 void MainWindow::on_actionOpenImage_triggered()
 {
-    testDcmtk();
 }
 
 void MainWindow::onCurrentPluginUpdateNeeded()

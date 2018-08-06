@@ -59,7 +59,6 @@ private:
     void populatePluginsMenu();
     void populateLanguagesMenu();
     void populateThemesMenu();
-    void testDcmtk();
 
 private:
     Ui::MainWindow *m_ui;
