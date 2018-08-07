@@ -33,3 +33,5 @@ Also copy the right version (debug/release) of plugins in dlplugins folder.
 
 To troubleshoot errors that is encountered while building dcmtk from source, refer the following Stackoverflow discussion:
 Reference: https://stackoverflow.com/questions/28106665/dcmtk-character-set-unicode-error
+
+This folder also contains install.zip. This is already compiled DLL and Lib files based on above steps for building dcmtk.
