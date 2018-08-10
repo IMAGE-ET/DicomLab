@@ -48,10 +48,10 @@ void Dcmdump_Plugin::setupUi(QWidget *parent)
     // Connect signals for GUI elemnts manually here since they won't be connected by name in a plugin
     // ...
     // emit updateNeeded(); should be added whenever parameters on the plugin GUI change
-    connect(m_ui->btnLoadDicomFile, SIGNAL(clicked(bool)),this,SLOT(on_btnLoadDicomFile_clicked()));
+    connect(m_ui->btnProcess, SIGNAL(clicked(bool)), this, SLOT(onStartDumpButtonClicked()));
 }
 
-void Dcmdump_Plugin::on_btnLoadDicomFile_clicked()
+void Dcmdump_Plugin::onStartDumpButtonClicked()
 {
     dumpDcmFile();
 }

@@ -30,7 +30,7 @@ signals:
     void infoMessage(QString msg);
 
 private slots:
-    void on_btnLoadDicomFile_clicked();
+    void onStartDumpButtonClicked();
 
 private:
     void dumpDcmFile();

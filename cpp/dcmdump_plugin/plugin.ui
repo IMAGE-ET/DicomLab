@@ -49,19 +49,6 @@
     <string>Start Dump</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="btnLoadDicomFile">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>90</y>
-     <width>135</width>
-     <height>29</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Load DICOM file(s)</string>
-   </property>
-  </widget>
  </widget>
  <resources/>
  <connections/>
