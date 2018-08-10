@@ -24,6 +24,10 @@
 
 #include "dlplugininterface.h"
 
+QT_BEGIN_NAMESPACE
+class FileListModel;
+QT_END_NAMESPACE
+
 namespace Ui {
 class MainWindow;
 }
@@ -54,11 +58,17 @@ private slots:
     void on_action_Camera_triggered();
 
 private:
+    void setupUI();
     void loadSettings();
     void saveSettings();
     void populatePluginsMenu();
     void populateLanguagesMenu();
     void populateThemesMenu();
+
+private slots:
+    void updateFileCount(int number);
+    void updateOnClickHandler(const QModelIndex& index);
+    void clearLogViewer();
 
 private:
     Ui::MainWindow *m_ui;
@@ -68,6 +78,7 @@ private:
     QPointer<QPluginLoader> m_currentPlugin;
     QPointer<QWidget> m_currentPluginGui;
     QTranslator m_translator;
+    FileListModel* m_fileListModel;
 };
 
 #endif // MAINWINDOW_H

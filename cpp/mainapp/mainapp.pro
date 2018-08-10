@@ -24,10 +24,12 @@ INCLUDEPATH += ../dlplugininterface
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp 
+        mainwindow.cpp \  
+    filelistmodel.cpp
 
 HEADERS += \
-        mainwindow.h 
+        mainwindow.h \  
+    filelistmodel.h
 FORMS += \
         mainwindow.ui
 

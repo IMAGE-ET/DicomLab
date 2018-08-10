@@ -13,25 +13,55 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
-   <item row="1" column="0">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Dcmdump plugin</string>
-     </property>
-     <property name="wordWrap">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QPushButton" name="btnLoadDicomFile">
-     <property name="text">
-      <string>Load DICOM file(s)</string>
-     </property>
-    </widget>
-   </item>
-  </layout>
+  <widget class="QLabel" name="lblDestinationFolder">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>20</y>
+     <width>122</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Destination Folder</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="edtDestinationFolder">
+   <property name="geometry">
+    <rect>
+     <x>150</x>
+     <y>20</y>
+     <width>154</width>
+     <height>26</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btnProcess">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>50</y>
+     <width>93</width>
+     <height>29</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Start Dump</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btnLoadDicomFile">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>90</y>
+     <width>135</width>
+     <height>29</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Load DICOM file(s)</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>

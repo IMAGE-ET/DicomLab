@@ -38,11 +38,34 @@
       <item row="0" column="1">
        <widget class="QGroupBox" name="groupBox">
         <property name="title">
-         <string>View</string>
+         <string/>
         </property>
-        <layout class="QGridLayout" name="gridLayout_6">
+        <property name="flat">
+         <bool>false</bool>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_3">
          <item row="0" column="0">
-          <layout class="QHBoxLayout" name="horizontalLayout"/>
+          <widget class="QLabel" name="lblSourceDirectory">
+           <property name="text">
+            <string>Directory:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="edtSourceDirectory"/>
+         </item>
+         <item row="1" column="0" colspan="2">
+          <widget class="QListView" name="lstFileList"/>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="lblLogViewer">
+           <property name="text">
+            <string>LogViewer</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0" colspan="2">
+          <widget class="QTextBrowser" name="txtbLogViewer"/>
          </item>
         </layout>
        </widget>

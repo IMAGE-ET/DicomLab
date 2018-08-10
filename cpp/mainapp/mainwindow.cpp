@@ -1,6 +1,7 @@
 // Project includes
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "filelistmodel.h"
 
 // Library includes
 #include <memory>
@@ -8,6 +9,7 @@
 // Qt includes
 #include <QMessageBox>
 #include <QStringList>
+#include <QStandardItemModel>
 
 #define PLUGINS_SUBFOLDER                   "/dlplugins/"
 #define LANGUAGES_SUBFOLDER                 "/languages/"
@@ -25,6 +27,8 @@ MainWindow::MainWindow(QWidget *parent) :
     populatePluginsMenu();
     populateLanguagesMenu();
     populateThemesMenu();
+
+    setupUI();
 }
 
 MainWindow::~MainWindow()
@@ -63,16 +67,8 @@ void MainWindow::changeEvent(QEvent *event)
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    int result = QMessageBox::warning(this, tr("Exit"), tr("Are you sure you want to exit?"), QMessageBox::Yes, QMessageBox::No);
-    if(result == QMessageBox::Yes)
-    {
-        saveSettings();
-        event->accept();
-    }
-    else
-    {
-        event->ignore();
-    }
+    saveSettings();
+    event->accept();
 }
 
 void MainWindow::populatePluginsMenu()
@@ -172,6 +168,23 @@ void MainWindow::populateThemesMenu()
     m_ui->actionTheme->setMenu(themesMenu);
 }
 
+void MainWindow::updateFileCount(int number)
+{
+    m_ui->txtbLogViewer->append(tr("%1 items added").arg(number));
+}
+
+void MainWindow::updateOnClickHandler(const QModelIndex& index)
+{
+    clearLogViewer();
+    m_ui->txtbLogViewer->append(tr("%1 row %2 column clicked.").arg(index.row()).arg(index.column()));
+    m_ui->txtbLogViewer->append(tr("Value of clicked item: %1").arg(index.data().toString()));
+}
+
+void MainWindow::clearLogViewer()
+{
+    m_ui->txtbLogViewer->clear();
+}
+
 void MainWindow::on_actionAboutQt_triggered()
 {
     qApp->aboutQt();
@@ -202,7 +215,6 @@ void MainWindow::onPluginActionTriggered(bool)
         connect(m_currentPlugin->instance(), SIGNAL(updateNeeded()), this, SLOT(onCurrentPluginUpdateNeeded()));
         connect(m_currentPlugin->instance(), SIGNAL(infoMessage(QString)), this, SLOT(onCurrentPluginInfoMessage(QString)));
         connect(m_currentPlugin->instance(), SIGNAL(errorMessage(QString)), this, SLOT(onCurrentPluginErrorMessage(QString)));
-
     }
 }
 
@@ -262,4 +274,21 @@ void MainWindow::onCurrentPluginInfoMessage(QString msg)
 void MainWindow::on_action_Camera_triggered()
 {
 
+}
+
+void MainWindow::setupUI()
+{
+    m_fileListModel = new FileListModel(this);
+    QString defaultPath = "C:\\temp\\dcmtestdata";
+    m_fileListModel->setDirPath(defaultPath);
+    m_ui->lstFileList->setModel(m_fileListModel);
+
+    m_ui->edtSourceDirectory->setText(defaultPath);
+
+    connect(m_ui->edtSourceDirectory, &QLineEdit::textChanged,
+            m_fileListModel, &FileListModel::setDirPath);
+    connect(m_fileListModel, &FileListModel::numberPopulated,
+            this, &MainWindow::updateFileCount);
+    connect(m_ui->lstFileList, &QListView::clicked,
+            this, &MainWindow::updateOnClickHandler);
 }
