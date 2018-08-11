@@ -254,6 +254,8 @@ void MainWindow::on_actionOpenImage_triggered()
 void MainWindow::onCurrentPluginUpdateNeeded()
 {
     // TODO
+    QString msg = "Signal from Plugin received";
+    QMessageBox::information(nullptr,tr("Trapped Plugin signal"),msg);
 }
 
 void MainWindow::on_actionSaveImage_triggered()

@@ -54,6 +54,7 @@ void Dcmdump_Plugin::setupUi(QWidget *parent)
 void Dcmdump_Plugin::onStartDumpButtonClicked()
 {
     dumpDcmFile();
+    emit updateNeeded();
 }
 
 // test whether DCMTK is working or not.
