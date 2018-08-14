@@ -2,6 +2,7 @@ include(../dcmtk.pri)
 
 QT       += widgets
 CONFIG   += c++14
+QMAKE_CXXFLAGS += /std:c++17
 TARGET = Template_Plugin
 TEMPLATE = lib
 
