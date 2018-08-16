@@ -55,12 +55,9 @@ void MainWindow::saveSettings()
 
 void MainWindow::changeEvent(QEvent *event)
 {
-    if(event->type() == QEvent::LanguageChange)
-    {
+    if ( event->type() == QEvent::LanguageChange ) {
         m_ui->retranslateUi(this);
-    }
-    else
-    {
+    } else {
         QMainWindow::changeEvent(event);
     }
 }
@@ -76,30 +73,22 @@ void MainWindow::populatePluginsMenu()
     // Load all plugins and populate the menus
     QDir pluginsDir(qApp->applicationDirPath() + PLUGINS_SUBFOLDER);
     QFileInfoList pluginFiles = pluginsDir.entryInfoList(QDir::NoDotAndDotDot | QDir::Files, QDir::Name);
-    foreach(QFileInfo pluginFile, pluginFiles)
-    {
-        if(QLibrary::isLibrary(pluginFile.absoluteFilePath()))
-        {
+    foreach ( QFileInfo pluginFile, pluginFiles ) {
+        if ( QLibrary::isLibrary(pluginFile.absoluteFilePath())) {
             QPluginLoader pluginLoader(pluginFile.absoluteFilePath(), this);
-            if(DlPluginInterface *plugin = dynamic_cast<DlPluginInterface*>(pluginLoader.instance()))
-            {
+            if ( DlPluginInterface *plugin = dynamic_cast<DlPluginInterface*>(pluginLoader.instance())) {
                 QAction *pluginAction = m_ui->menu_Plugins->addAction(plugin->title());
                 pluginAction->setProperty(FILE_ON_DISK_DYNAMIC_PROPERTY, pluginFile.absoluteFilePath());
                 connect(pluginAction, SIGNAL(triggered(bool)), this, SLOT(onPluginActionTriggered(bool)));
-                if(m_currentPluginFile == pluginFile.absoluteFilePath())
-                {
+                if ( m_currentPluginFile == pluginFile.absoluteFilePath()) {
                     pluginAction->trigger();
                 }
-            }
-            else
-            {
+            } else {
                 QMessageBox::warning(this, tr("Warning"),
                                      QString(tr("Make sure %1 is a correct plugin for this application<br>"
                                                 "and it's not in use by some other application!")).arg(pluginFile.fileName()));
             }
-        }
-        else
-        {
+        } else {
             QMessageBox::warning(this, tr("Warning"),
                                  QString(tr("Make sure only plugins exist in %1 folder.<br>"
                                             "%2 is not a plugin."))
@@ -108,8 +97,7 @@ void MainWindow::populatePluginsMenu()
         }
     }
 
-    if(m_ui->menu_Plugins->actions().count() <= 0)
-    {
+    if ( m_ui->menu_Plugins->actions().count() <= 0 ) {
         QMessageBox::critical(this, tr("No Plugins"), QString(tr("This application cannot work without plugins!"
                                                                  "<br>Make sure that %1 folder exists "
                                                                  "in the same folder as the application<br>and that "
@@ -129,14 +117,12 @@ void MainWindow::populateLanguagesMenu()
     // Load all languages and populate the menus
     QDir languagesDir(qApp->applicationDirPath() + LANGUAGES_SUBFOLDER);
     QFileInfoList languageFiles = languagesDir.entryInfoList(QStringList() << "*.qm", QDir::NoDotAndDotDot | QDir::Files, QDir::Name);
-    foreach(QFileInfo languageFile, languageFiles)
-    {
+    foreach ( QFileInfo languageFile, languageFiles ) {
         QAction *languageAction = languagesMenu->addAction(languageFile.baseName());
         languageAction->setProperty(FILE_ON_DISK_DYNAMIC_PROPERTY, languageFile.absoluteFilePath());
         connect(languageAction, SIGNAL(triggered(bool)), this, SLOT(onLanguageActionTriggered(bool)));
 
-        if(m_currentLanguageFile == languageFile.absoluteFilePath())
-        {
+        if ( m_currentLanguageFile == languageFile.absoluteFilePath()) {
             languageAction->trigger();
         }
     }
@@ -154,14 +140,12 @@ void MainWindow::populateThemesMenu()
     // Load all themes and populate the menus
     QDir themesDir(qApp->applicationDirPath() + THEMES_SUBFOLDER);
     QFileInfoList themeFiles = themesDir.entryInfoList(QStringList() << "*.thm", QDir::NoDotAndDotDot | QDir::Files, QDir::Name);
-    foreach(QFileInfo themeFile, themeFiles)
-    {
+    foreach ( QFileInfo themeFile, themeFiles ) {
         QAction *themeAction = themesMenu->addAction(themeFile.baseName());
         themeAction->setProperty(FILE_ON_DISK_DYNAMIC_PROPERTY, themeFile.absoluteFilePath());
         connect(themeAction, SIGNAL(triggered(bool)), this, SLOT(onThemeActionTriggered(bool)));
 
-        if(m_currentThemeFile == themeFile.absoluteFilePath())
-        {
+        if ( m_currentThemeFile == themeFile.absoluteFilePath()) {
             themeAction->trigger();
         }
     }
@@ -197,8 +181,7 @@ void MainWindow::on_actionExit_triggered()
 
 void MainWindow::onPluginActionTriggered(bool)
 {
-    if(!m_currentPlugin.isNull())
-    {
+    if ( ! m_currentPlugin.isNull()) {
         delete m_currentPlugin;
         delete m_currentPluginGui;
     }
@@ -209,8 +192,7 @@ void MainWindow::onPluginActionTriggered(bool)
     m_ui->pluginLayout->addWidget(m_currentPluginGui);
     DlPluginInterface *currentPluginInstance = dynamic_cast<DlPluginInterface*>(m_currentPlugin->instance());
 
-    if(currentPluginInstance)
-    {
+    if ( currentPluginInstance ) {
         currentPluginInstance->setupUi(m_currentPluginGui);
         connect(m_currentPlugin->instance(), SIGNAL(updateNeeded()), this, SLOT(onCurrentPluginUpdateNeeded()));
         connect(m_currentPlugin->instance(), SIGNAL(infoMessage(QString)), this, SLOT(onCurrentPluginInfoMessage(QString)));
@@ -222,8 +204,7 @@ void MainWindow::onLanguageActionTriggered(bool)
 {
     m_currentLanguageFile = QObject::sender()->property(FILE_ON_DISK_DYNAMIC_PROPERTY).toString();
     qApp->removeTranslator(&m_translator);
-    if(!m_currentLanguageFile.isEmpty())
-    {
+    if ( ! m_currentLanguageFile.isEmpty()) {
         m_translator.load(m_currentLanguageFile);
         qApp->installTranslator(&m_translator);
         m_ui->retranslateUi(this);
@@ -234,12 +215,9 @@ void MainWindow::onThemeActionTriggered(bool)
 {
     m_currentThemeFile = QObject::sender()->property(FILE_ON_DISK_DYNAMIC_PROPERTY).toString();
     QFile themeFile(m_currentThemeFile);
-    if(m_currentThemeFile.isEmpty())
-    {
+    if ( m_currentThemeFile.isEmpty()) {
         qApp->setStyleSheet("");
-    }
-    else
-    {
+    } else {
         themeFile.open(QFile::ReadOnly | QFile::Text);
         QString styleSheet = themeFile.readAll();
         qApp->setStyleSheet(styleSheet);
@@ -255,7 +233,7 @@ void MainWindow::onCurrentPluginUpdateNeeded()
 {
     // TODO
     QString msg = "Signal from Plugin received";
-    QMessageBox::information(nullptr,tr("Trapped Plugin signal"),msg);
+    QMessageBox::information(nullptr, tr("Trapped Plugin signal"), msg);
 }
 
 void MainWindow::on_actionSaveImage_triggered()

@@ -69,32 +69,29 @@ void Dcmdump_Plugin::dumpDcmFile()
     DcmFileFormat fileFormat;
     OFCondition status = fileFormat.loadFile(filePath.toStdString().c_str());
 
-    if (!status.good()) {
+    if ( ! status.good()) {
         qDebug() << "Error in loading a DICOM file.";
         return;
     }
 
     OFString patientName;
-    if (fileFormat.getDataset()->findAndGetOFString(DCM_PatientName,patientName).good()) {
+    if ( fileFormat.getDataset()->findAndGetOFString(DCM_PatientName, patientName).good()) {
         qDebug() << "Patient's Name: " << patientName.c_str();
-    }
-    else {
+    } else   {
         qDebug() << "Cannot access Patient's Name.";
     }
 
     OFString patientID;
-    if (fileFormat.getDataset()->findAndGetOFString(DCM_PatientID, patientID).good()) {
+    if ( fileFormat.getDataset()->findAndGetOFString(DCM_PatientID, patientID).good()) {
         qDebug() << "Patient's ID: " << patientID.c_str();
-    }
-    else {
+    } else   {
         qDebug() << "Cannot access Patient's ID.";
     }
 
     OFString studyInstanceUID;
-    if (fileFormat.getDataset()->findAndGetOFString(DCM_StudyInstanceUID, studyInstanceUID).good()) {
+    if ( fileFormat.getDataset()->findAndGetOFString(DCM_StudyInstanceUID, studyInstanceUID).good()) {
         qDebug() << "Study Instance UID ID: " << studyInstanceUID.c_str();
-    }
-    else {
+    } else   {
         qDebug() << "Cannot access Patient's ID.";
     }
 
@@ -109,7 +106,6 @@ void Dcmdump_Plugin::dumpDcmFile()
     msgList << "End of DCMTK test.";
     QString msg = msgList.join("\n");
 
-    QMessageBox::information(nullptr,tr("Contents of DICOM file"),msg);
+    QMessageBox::information(nullptr, tr("Contents of DICOM file"), msg);
 
-    return;
 }

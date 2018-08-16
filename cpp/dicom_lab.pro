@@ -4,4 +4,4 @@ SUBDIRS += \
     template_plugin \
     dcmdump_plugin
 
-OTHER_FILES += dcmtk.pri
+OTHER_FILES += dcmtk.pri README.md

@@ -5,10 +5,10 @@
 #include "dlplugininterface.h"
 
 namespace Ui {
-    class PluginGui;
+class PluginGui;
 }
 
-class TEMPLATE_PLUGINSHARED_EXPORT Template_Plugin: public QObject, public DlPluginInterface
+class TEMPLATE_PLUGINSHARED_EXPORT Template_Plugin : public QObject, public DlPluginInterface
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "com.dicomlab.dlplugininterface")
